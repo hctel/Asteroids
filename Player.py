@@ -37,9 +37,9 @@ class Player:
             
             
         if self.__rotate == 1:
-            self.__rot -= 0.05
+            self.__rot -= 0.025
         elif self.__rotate == -1:
-            self.__rot += 0.05
+            self.__rot += 0.025
             
         if self.__accel == 1:
             self.__speed = (self.__speed[0] + self.__accelRate*(1/60)*cos(self.__rot), self.__speed[1] + self.__accelRate*(1/60)*sin(self.__rot))
@@ -68,7 +68,13 @@ class Player:
         
     def shoot(self):
         self.__pew.play()
-        return Bullet(self.__pos, self.__rot, 50+self.totalSpeed, 500)
+        return Bullet(self.__pos, self.__rot, 50+self.totalSpeed/1000, 500)
+    
+    def getPosX(self):
+        return self.__pos[0]
+    def getPosY(self):
+        return self.__pos[1]
+      
       
     @property    
     def totalSpeed(self):

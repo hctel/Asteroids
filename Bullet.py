@@ -8,7 +8,7 @@ class Bullet:
         self.__speed = speed
         self.__lifetime = lifetime
         self.__age = 0 
-        self.__size = 2
+        self.__size = 4
     
     def draw(self, screen):
         if self.__age < self.__lifetime:
@@ -25,8 +25,13 @@ class Bullet:
                 self.__pos = (self.__pos[0], 0)
            
             self.__age += 1
-    def getPos(self):
+    def getPosX(self):
         if self.__age < self.__lifetime:
-            return self.__pos
+            return self.__pos[0]
         else:
-            return (-100, -100)
+            return -100
+    def getPosY(self):
+        if self.__age < self.__lifetime:
+            return self.__pos[1]
+        else:
+            return -100

@@ -20,3 +20,10 @@ class Asteroid:
             self.__pos = (self.__pos[0], 600)
         if self.__pos[1] > 600:
             self.__pos = (self.__pos[0], 0)
+            
+    def getPosX(self):
+        return self.__pos[0]
+    def getPosY(self):
+        return self.__pos[1]
+    def getRadius(self):
+        return self.__size
