@@ -11,69 +11,76 @@ from pygame_gui.elements import UILabel, UIButton, UITextEntryBox, UITextBox
 pygame.init()
 mixer.init()
 explode = mixer.Sound("hit.mp3")
+lvlup = mixer.Sound("levelup.mp3")
 
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Asteroids")
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((800, 600))
 
-accelRate = 15
+accelRate = 20
 player = Player((400,300), accelRate)
 
-
-def getLeaderboardText():
-    leaderboardtxt=""  
+def getString(filepath):
     try:
-        file = open('scores.json')
-        try:
-            leaderboardtxt = str(file.read())
-            if leaderboardtxt == "{}":
-                return ""
-            leaderboardjson = json.load(leaderboardtxt)
-            scores = []
-            
-            for E in leaderboardjson:
-                scores.append((E["name"], E["score"]))
-            
-            outScores = sorted(scores, key=lambda x: x[1], reverse=True)
-            
-            out = ""
-            for S in outScores:
-                out += S[0] + " : " + str(S[1]) + "<br>"
-            
-            return out
-            
-
-        finally:
-            file.close()
+        with open(filepath) as file:
+            return file.read()
     except FileNotFoundError:
-        with open('scores.json', 'w') as file:
-            file.write('{}')
-        file.close()
-    except:
-        print("Erreur de lecture du fichier !")
-        return("Erreur lors de la lecture du fichier de scores")
+        print("Fichier non trouve!")
+        return 404
+    except IOError:
+        print("Erreur d'entree-sortie")
+        return 400
 
-def saveScore(json):
-    leaderboardtxt=""  
+def getJson(string):
+    if string:
+        return json.loads(string)
+    
+def getScores():
+    txt = getString("scores.json")
+    if type(txt) == int:
+        if txt == 404:
+            return("Pas encore de scores...")
+        elif txt == 400:
+            return("Erreur de fichier!")
+    else:
+        jsont = getJson(txt)
+        scores = sorted(jsont, key=lambda x: x["score"], reverse=True)
+        out = ""
+        for score in scores:
+            out += score["name"] + ": " + str(score["score"]) + "<br>"
+    return out
+        
+def record(name, score):
     try:
-        with open('scores.json', 'w') as file:
-            leaderboardtxt = str(file.read())
-            leaderboardjson = json.load(leaderboardtxt)
-            leaderboardjson.append(json)
-            json.dump(leaderboardjson, indent = 4)
+        with open("scores.json", 'r') as fichier_scores:
+            scores = json.load(fichier_scores)
     except FileNotFoundError:
-        with open('scores.json', 'w') as file:
-            file.write('{}')
-        file.close()
-    except:
-        print("Erreur de lecture du fichier !")
+        scores = []
+
+    scores.append({"name": name, "score": score})
+
+
+    with open('scores.json', 'w') as fichier_scores:
+        json.dump(scores, fichier_scores, indent=2)
 
 score = 0
 scoreLabel = UILabel(
         relative_rect=pygame.Rect(0, 0, 100, 50),
         text='',
         manager = manager,
+    )
+
+levelLabel = UILabel(
+        relative_rect=pygame.Rect(100, 0, 100, 50),
+        text = '',
+        manager = manager
+    )
+
+speedLabel = UILabel(
+        relative_rect = pygame.Rect(700, 0, 100, 50),
+        text = '',
+        manager = manager
     )
 
 
@@ -126,6 +133,11 @@ lastShot = 0
 currentFrame = 0
 shootingDelta = 50
 started = False
+level = 0
+
+def spawnAsteroids(qty):
+    for n in range(qty):
+        asteroids.append(Asteroid(30, (randint(0,800), randint(0,600)), (0.4*randint(-40,40), 0.4*randint(-40,40))))
 
 while True:
     
@@ -138,15 +150,14 @@ while True:
                 startButton.hide()
                 titleLabel.hide()
                 started = True
-                for n in range(10):
-                    asteroids.append(Asteroid(30, (randint(0,800), randint(0,600)), (0.4*randint(-40,40), 0.4*randint(-40,40))))
+                spawnAsteroids(level)
             elif event.ui_element == saveBtn:
                 toAddName = playerName.get_text()
                 playerName.set_text("")
                 
                 if not toAddName == "":
-                    jsonElem = {"name" : toAddName, "score" : score}
-                    saveScore(jsonElem)
+                    record(toAddName, score)
+                    quit()
                     
         elif event.type == pygame.KEYDOWN and started:
             if event.key == pygame.K_LEFT:
@@ -172,9 +183,14 @@ while True:
         manager.process_events(event)
         
     if score < 0:
-        score = 0
-        
-    scoreLabel.set_text("Score:" + str(score))
+        score = 0        
+    if started:
+        scoreLabel.set_text("Score:" + str(score))
+        levelLabel.set_text("Niveau " + str(level))
+        if len(asteroids) < 1:
+            level+=1
+            spawnAsteroids(level)
+            lvlup.play()
     
     manager.update(time_delta/1000)
 
@@ -184,17 +200,18 @@ while True:
     
     if started:
         player.draw(screen)
-    
+        speedLabel.set_text(str(player.getSpeed()))
         for A in asteroids:
             A.draw(screen)
             if player.getPosX() - A.getPosX() < A.getRadius() and player.getPosX() - A.getPosX() > -A.getRadius():
                 if player.getPosY() - A.getPosY() < A.getRadius() and player.getPosY() - A.getPosY() > -A.getRadius():
                     started = False
-                    leaderboard.set_text(getLeaderboardText())
+                    leaderboard.set_text(getScores())
                     gameOverLabel.show()
                     leaderboard.show()
                     playerName.show()
                     saveBtn.show()
+            
             for B in bullets:
                     if B.getPosX() - A.getPosX() < A.getRadius() and B.getPosX() - A.getPosX() > -A.getRadius():
                         if B.getPosY() - A.getPosY() < A.getRadius() and B.getPosY() - A.getPosY() > -A.getRadius():

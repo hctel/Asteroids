@@ -8,7 +8,7 @@ class Bullet:
         self.__speed = speed
         self.__lifetime = lifetime
         self.__age = 0 
-        self.__size = 4
+        self.__size = 2
     
     def draw(self, screen):
         if self.__age < self.__lifetime:
