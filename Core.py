@@ -82,7 +82,7 @@ speedLabel = UILabel(
         text = '',
         manager = manager
     )
-
+speedLabel.hide()
 
 titleLabel = UILabel(
         relative_rect=pygame.Rect(350, 250, 100, 50),
