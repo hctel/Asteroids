@@ -23,8 +23,15 @@ screen = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((800, 600))
 
+accelRate = 15
+player = Player((400,300), accelRate)
 
-player = Player((400,300))
+bullets = []
+asteroids = []
+
+lastShot = 0
+currentFrame = 0
+shootingDelta = 50
 
 while True:
     
@@ -41,6 +48,10 @@ while True:
                 player.accelFW()
             elif event.key == pygame.K_DOWN:
                 player.accelBW()
+            elif event.key == pygame.K_SPACE:
+                if currentFrame - lastShot > shootingDelta:
+                    bullets.append(player.shoot())
+                    lastShot = currentFrame
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 player.stopRotate()
@@ -56,5 +67,10 @@ while True:
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, 800, 600))
 
     manager.draw_ui(screen)
+    
     player.draw(screen)
+    for B in bullets:
+        B.draw(screen)
+    
     pygame.display.flip()
+    currentFrame += 1
