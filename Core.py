@@ -1,3 +1,8 @@
+width = 1000
+height = 900
+shootingDelta = 10
+
+
 import pygame
 import pygame_gui
 import sys
@@ -13,13 +18,14 @@ mixer.init()
 explode = mixer.Sound("hit.mp3")
 lvlup = mixer.Sound("levelup.mp3")
 
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((width, height))
+surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((800, 600))
 
 accelRate = 20
-player = Player((400,300), accelRate)
+player = Player((400,300), surface)
 
 def getString(filepath):
     try:
@@ -47,8 +53,8 @@ def getScores():
         jsont = getJson(txt)
         scores = sorted(jsont, key=lambda x: x["score"], reverse=True)
         out = ""
-        for score in scores:
-            out += score["name"] + ": " + str(score["score"]) + "<br>"
+        for S in scores:
+            out += S["name"] + ": " + str(S["score"]) + "<br>"
     return out
         
 def record(name, score):
@@ -82,7 +88,7 @@ speedLabel = UILabel(
         text = '',
         manager = manager
     )
-speedLabel.hide()
+#speedLabel.hide()
 
 titleLabel = UILabel(
         relative_rect=pygame.Rect(350, 250, 100, 50),
@@ -131,17 +137,21 @@ asteroids = []
 
 lastShot = 0
 currentFrame = 0
-shootingDelta = 50
 started = False
 level = 0
 
 def spawnAsteroids(qty):
     for n in range(qty):
-        asteroids.append(Asteroid(30, (randint(0,800), randint(0,600)), (0.4*randint(-40,40), 0.4*randint(-40,40))))
+        x = randint(0,800)
+        y = randint(0,600)
+        while abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
+            x = randint(0,800)
+            y = randint(0,600)
+        asteroids.append(Asteroid(30, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
 
 while True:
     
-    time_delta = clock.tick(240)
+    time_delta = clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -194,7 +204,7 @@ while True:
     
     manager.update(time_delta/1000)
 
-    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, 800, 600))
+    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, width, height))
 
     manager.draw_ui(screen)
     
@@ -220,12 +230,13 @@ while True:
                             explode.play()
                             score += 50
                             if A.getRadius() > 10:
-                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40))))
-                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40))))
+                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
                 
     
         for B in bullets:
-            B.draw(screen)
+            if not B.draw(screen):
+                bullets.pop(bullets.index(B))
         
     
     pygame.display.flip()
