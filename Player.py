@@ -12,7 +12,7 @@ class Player:
         self.__rotate = 0 
         self.__accel = 0
         self.__accelRate = 8.5
-        self.__rotateRate = 7.5
+        self.__rotateRate = 8.5
         self.__surface = surface
         mixer.init()
         mixer.music.load("thrust.wav")

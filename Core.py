@@ -1,7 +1,8 @@
-width = 1920
-height = 1080
+width = 800
+height = 600
 shootingDelta = 10
 allowBrake = True
+minimumAsteroids = 3
 
 import pygame
 import pygame_gui
@@ -99,7 +100,6 @@ startButton = UIButton(
         manager = manager
     )
 
-
 gameOverLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-50, 0, 100, 50),
         text='Game Over!',
@@ -165,7 +165,7 @@ def start():
     score = 0
     asteroids = []
     bullets = []
-    spawnAsteroids(level)
+    spawnAsteroids(level+minimumAsteroids-1)
     leaderboard.hide()
     gameOverLabel.hide()
     saveBtn.hide()
@@ -214,8 +214,6 @@ while True:
                     bullets.append(player.shoot())
                     lastShot = currentFrame
                     score -= 1
-            elif event.key == pygame.K_ENDs:
-                sys.exit()    
         
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -233,7 +231,7 @@ while True:
         levelLabel.set_text("Niveau " + str(level))
         if len(asteroids) < 1:
             level+=1
-            spawnAsteroids(level)
+            spawnAsteroids(level+minimumAsteroids-1)
             lvlup.play()
     
     manager.update(time_delta/1000)
@@ -257,7 +255,7 @@ while True:
                     saveBtn.show()
             
             for B in bullets:
-                    if B.getPosX() - A.getPosX() < A.getRadius() and B.getPosX() - A.getPosX() > -A.getRadius():
+                    if B.getPosX() - A.getPosX() < A.getRadius()+5 and B.getPosX() - A.getPosX() > -A.getRadius()-5:
                         if B.getPosY() - A.getPosY() < A.getRadius() and B.getPosY() - A.getPosY() > -A.getRadius():
                             asteroids.pop(asteroids.index(A))
                             bullets.pop(bullets.index(B))
