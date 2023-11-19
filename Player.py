@@ -13,7 +13,7 @@ class Player:
         self.__accel = 0
         self.__accelRate = 8.5
         self.__maxRotateRate = 7.5
-        self.__rotateAccel = 1.25
+        self.__rotateAccel = 0.9
         self.__rotateDecel = 0.7
         self.__rotateSpeed = 0
         self.__surface = surface

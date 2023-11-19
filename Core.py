@@ -1,5 +1,5 @@
-width = 1000
-height = 900
+width = 1920
+height = 1080
 shootingDelta = 10
 
 
@@ -22,10 +22,7 @@ screen = pygame.display.set_mode((width, height))
 surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
 clock = pygame.time.Clock()
-manager = pygame_gui.UIManager((800, 600))
-
-accelRate = 20
-player = Player((400,300), surface)
+manager = pygame_gui.UIManager((width, height))
 
 def getString(filepath):
     try:
@@ -91,40 +88,40 @@ speedLabel = UILabel(
 #speedLabel.hide()
 
 titleLabel = UILabel(
-        relative_rect=pygame.Rect(350, 250, 100, 50),
+        relative_rect=pygame.Rect((width/2)-50, (height/2)-25-(height/10), 100, 50),
         text='Asteroids',
         manager = manager,
     )
 
 startButton = UIButton(
-        relative_rect=pygame.Rect(350,300, 100,50),
+        relative_rect=pygame.Rect((width/2)-50, (height/2)-25+(height/10), 100,50),
         text='Start',
         manager = manager
     )
 
 
 gameOverLabel = UILabel(
-        relative_rect=pygame.Rect(350, 0, 100, 50),
+        relative_rect=pygame.Rect((width/2)-50, 0, 100, 50),
         text='Game Over!',
         manager = manager,
     )
 gameOverLabel.hide()
 
 leaderboard = UITextBox(
-        relative_rect=pygame.Rect(250, 100, 300, 400),
+        relative_rect=pygame.Rect((width/2)-150, (height/2)-200, 300, 400),
         html_text="",
         manager = manager
     )
 leaderboard.hide()
 
 playerName = UITextEntryBox(
-        relative_rect=pygame.Rect(250, 500, 200, 50),
+        relative_rect=pygame.Rect((width/2)-150, (height/2)+200, 200, 50),
         manager = manager
     )
 playerName.hide()
 
 saveBtn = UIButton(
-        relative_rect=pygame.Rect(450, 500, 100, 50),
+        relative_rect=pygame.Rect((width/2)+50, (height/2)+200, 100, 50),
         text="Save",
         manager = manager
     )
@@ -140,13 +137,18 @@ currentFrame = 0
 started = False
 level = 0
 
+
+accelRate = 20
+player = Player((width/2,height/2), surface)
+
+
 def spawnAsteroids(qty):
     for n in range(qty):
-        x = randint(0,800)
-        y = randint(0,600)
+        x = randint(0,width)
+        y = randint(0,height)
         while abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
-            x = randint(0,800)
-            y = randint(0,600)
+            x = randint(0,width)
+            y = randint(0,height)
         asteroids.append(Asteroid(30, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
 
 while True:
@@ -167,8 +169,18 @@ while True:
                 
                 if not toAddName == "":
                     record(toAddName, score)
-                    quit()
-                    
+                    level = 1
+                    score = 0
+                    asteroids = []
+                    bullets = []
+                    started = True
+                    spawnAsteroids(level)
+                    leaderboard.hide()
+                    gameOverLabel.hide()
+                    saveBtn.hide()
+                    playerName.hide()
+                    player = Player((width/2,height/2), surface)
+  
         elif event.type == pygame.KEYDOWN and started:
             if event.key == pygame.K_LEFT:
                 player.rotateCW()
@@ -183,6 +195,9 @@ while True:
                     bullets.append(player.shoot())
                     lastShot = currentFrame
                     score -= 1
+            elif event.key == pygame.K_END:
+                sys.exit()    
+        
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 player.stopRotate()
