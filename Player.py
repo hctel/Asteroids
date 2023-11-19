@@ -12,15 +12,12 @@ class Player:
         self.__rotate = 0 
         self.__accel = 0
         self.__accelRate = 8.5
-        self.__maxRotateRate = 7.5
-        self.__rotateAccel = 0.9
-        self.__rotateDecel = 0.7
-        self.__rotateSpeed = 0
+        self.__rotateRate = 7.5
         self.__surface = surface
         mixer.init()
-        mixer.music.load("brr.wav")
+        mixer.music.load("thrust.wav")
         mixer.music.set_volume(.5)
-        self.__pew = mixer.Sound("pew.mp3")
+        self.__pew = mixer.Sound("fire2.wav")
         
     def draw(self, screen):
         self.__screen = screen 
@@ -40,7 +37,7 @@ class Player:
             self.__pos = (self.__pos[0], 0)
             
             
-        self.__rot = self.__rot + self.__rotateSpeed*(1/60)
+        self.__rot = self.__rot + self.__rotateRate*(1/60)*self.__rotate
             
         prev_speed = self.__speed
         self.__speed = (self.__speed[0] + self.__accelRate*self.__accel*cos(self.__rot), self.__speed[1] + self.__accelRate*self.__accel*sin(self.__rot))
@@ -49,16 +46,7 @@ class Player:
         if self.__speed[1] > self.__vmax or self.__speed[1] < -self.__vmax:
             self.__speed = (self.__speed[0], prev_speed[1])
         
-        if self.__rotate == 0:
-            if self.__rotateSpeed > 0:
-                self.__rotateSpeed = self.__rotateSpeed + self.__rotateDecel*(-1)*self.__rotateSpeed/6.5
-            elif self.__rotateSpeed < 0:
-                self.__rotateSpeed = self.__rotateSpeed + self.__rotateDecel*(1)*abs(self.__rotateSpeed)/6.5
-            
-        prev_rotateSpeed = self.__rotateSpeed
-        self.__rotateSpeed = self.__rotateSpeed + self.__rotateAccel*self.__rotate
-        if self.__rotateSpeed > self.__maxRotateRate or self.__rotateSpeed < -self.__maxRotateRate:
-            self.__rotateSpeed = prev_rotateSpeed
+        
             
     def rotateCW(self):
         self.__rotate = -1
@@ -90,7 +78,7 @@ class Player:
         return self.__pos[1]
       
     def getSpeed(self):
-        return self.__rotateSpeed
+        return self.__speed
       
     @property    
     def totalSpeed(self):

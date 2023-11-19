@@ -1,7 +1,7 @@
 width = 1920
 height = 1080
 shootingDelta = 10
-
+allowBrake = True
 
 import pygame
 import pygame_gui
@@ -15,7 +15,7 @@ from pygame_gui.elements import UILabel, UIButton, UITextEntryBox, UITextBox
 
 pygame.init()
 mixer.init()
-explode = mixer.Sound("hit.mp3")
+explode = mixer.Sound("bangMedium.wav")
 lvlup = mixer.Sound("levelup.mp3")
 
 screen = pygame.display.set_mode((width, height))
@@ -67,7 +67,7 @@ def record(name, score):
     with open('scores.json', 'w') as fichier_scores:
         json.dump(scores, fichier_scores, indent=2)
 
-score = 0
+
 scoreLabel = UILabel(
         relative_rect=pygame.Rect(0, 0, 100, 50),
         text='',
@@ -85,7 +85,7 @@ speedLabel = UILabel(
         text = '',
         manager = manager
     )
-#speedLabel.hide()
+speedLabel.hide()
 
 titleLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-50, (height/2)-25-(height/10), 100, 50),
@@ -128,28 +128,60 @@ saveBtn = UIButton(
 saveBtn.hide()
 
 
+
 bullets = []
 asteroids = []
 
 
 lastShot = 0
 currentFrame = 0
+
 started = False
+score = 0
 level = 0
 
-
-accelRate = 20
 player = Player((width/2,height/2), surface)
 
 
 def spawnAsteroids(qty):
     for n in range(qty):
-        x = randint(0,width)
-        y = randint(0,height)
-        while abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
+        while True:
             x = randint(0,width)
             y = randint(0,height)
-        asteroids.append(Asteroid(30, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+            if not abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
+                asteroids.append(Asteroid(30, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+                break
+        
+
+def start():
+    global level
+    global score
+    global asteroids
+    global bullets
+    global started
+    global player
+    global asteroids
+    level = 1
+    score = 0
+    asteroids = []
+    bullets = []
+    spawnAsteroids(level)
+    leaderboard.hide()
+    gameOverLabel.hide()
+    saveBtn.hide()
+    playerName.hide()
+    startButton.hide()
+    titleLabel.hide()
+    player = Player((width/2,height/2), surface)
+    started = True
+    
+def displayMenu():
+    leaderboard.hide()
+    gameOverLabel.hide()
+    saveBtn.hide()
+    playerName.hide()
+    startButton.show()
+    titleLabel.show()
 
 while True:
     
@@ -159,34 +191,21 @@ while True:
             sys.exit()
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == startButton:
-                startButton.hide()
-                titleLabel.hide()
-                started = True
-                spawnAsteroids(level)
+                start()
             elif event.ui_element == saveBtn:
                 toAddName = playerName.get_text()
                 playerName.set_text("")
                 
                 if not toAddName == "":
                     record(toAddName, score)
-                    level = 1
-                    score = 0
-                    asteroids = []
-                    bullets = []
-                    started = True
-                    spawnAsteroids(level)
-                    leaderboard.hide()
-                    gameOverLabel.hide()
-                    saveBtn.hide()
-                    playerName.hide()
-                    player = Player((width/2,height/2), surface)
+                    displayMenu()
   
         elif event.type == pygame.KEYDOWN and started:
             if event.key == pygame.K_LEFT:
                 player.rotateCW()
             elif event.key == pygame.K_RIGHT:
                 player.rotateCCW()
-            elif event.key == pygame.K_UP:
+            elif event.key == pygame.K_UP and allowBrake:
                 player.accelFW()
             elif event.key == pygame.K_DOWN:
                 player.accelBW()
@@ -195,7 +214,7 @@ while True:
                     bullets.append(player.shoot())
                     lastShot = currentFrame
                     score -= 1
-            elif event.key == pygame.K_END:
+            elif event.key == pygame.K_ENDs:
                 sys.exit()    
         
         elif event.type == pygame.KEYUP:
