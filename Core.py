@@ -1,5 +1,5 @@
-width = 800
-height = 600
+width = 1920
+height = 1080
 shootingDelta = 10
 allowBrake = True
 minimumAsteroids = 3
@@ -12,18 +12,18 @@ from random import randint
 from Player import *
 from Asteroid import *
 from pygame import mixer
-from pygame_gui.elements import UILabel, UIButton, UITextEntryBox, UITextBox
+from pygame_gui.elements import UILabel, UIButton, UITextEntryLine, UITextBox
 
 pygame.init()
 mixer.init()
-explode = mixer.Sound("bangMedium.wav")
-lvlup = mixer.Sound("levelup.mp3")
+explode = mixer.Sound("res/bangMedium.wav")
+lvlup = mixer.Sound("res/levelup.mp3")
 
 screen = pygame.display.set_mode((width, height))
 surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
 clock = pygame.time.Clock()
-manager = pygame_gui.UIManager((width, height))
+manager = pygame_gui.UIManager((width, height), "conf/theme.json")
 
 def getString(filepath):
     try:
@@ -114,9 +114,10 @@ leaderboard = UITextBox(
     )
 leaderboard.hide()
 
-playerName = UITextEntryBox(
+playerName = UITextEntryLine(
         relative_rect=pygame.Rect((width/2)-150, (height/2)+200, 200, 50),
-        manager = manager
+        manager = manager,
+        placeholder_text = "Enter your name"
     )
 playerName.hide()
 

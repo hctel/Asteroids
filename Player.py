@@ -15,9 +15,9 @@ class Player:
         self.__rotateRate = 8.5
         self.__surface = surface
         mixer.init()
-        mixer.music.load("thrust.wav")
+        mixer.music.load("res/thrust.wav")
         mixer.music.set_volume(.5)
-        self.__pew = mixer.Sound("fire2.wav")
+        self.__pew = mixer.Sound("res/fire2.wav")
         
     def draw(self, screen):
         self.__screen = screen 
