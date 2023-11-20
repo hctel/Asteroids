@@ -52,7 +52,7 @@ def getScores():
         scores = sorted(jsont, key=lambda x: x["score"], reverse=True)
         out = ""
         for S in scores:
-            out += S["name"] + ": " + str(S["score"]) + "<br>"
+            out +=  S["name"]  + str(S["score"]) + "<br>"
     return out
         
 def record(name, score):
@@ -138,6 +138,7 @@ lastShot = 0
 currentFrame = 0
 
 started = False
+paused = False
 score = 0
 level = 0
 
@@ -201,21 +202,22 @@ while True:
                     record(toAddName, score)
                     displayMenu()
   
-        elif event.type == pygame.KEYDOWN and started:
-            if event.key == pygame.K_LEFT:
-                player.rotateCW()
-            elif event.key == pygame.K_RIGHT:
-                player.rotateCCW()
-            elif event.key == pygame.K_UP and allowBrake:
-                player.accelFW()
-            elif event.key == pygame.K_DOWN:
-                player.accelBW()
-            elif event.key == pygame.K_SPACE:
-                if currentFrame - lastShot > shootingDelta:
+        elif event.type == pygame.KEYDOWN:
+            if started and not paused:
+                if event.key == pygame.K_LEFT:
+                    player.rotateCW()
+                elif event.key == pygame.K_RIGHT:
+                    player.rotateCCW()
+                elif event.key == pygame.K_UP and allowBrake:
+                    player.accelFW()
+                elif event.key == pygame.K_DOWN:
+                    player.accelBW()
+                elif event.key == pygame.K_SPACE and currentFrame - lastShot > shootingDelta:
                     bullets.append(player.shoot())
                     lastShot = currentFrame
                     score -= 1
-        
+            if event.key == pygame.K_ESCAPE:
+                print("pause")
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 player.stopRotate()
@@ -241,7 +243,7 @@ while True:
 
     manager.draw_ui(screen)
     
-    if started:
+    if started and not paused:
         player.draw(screen)
         speedLabel.set_text(str(player.getSpeed()))
         for A in asteroids:
