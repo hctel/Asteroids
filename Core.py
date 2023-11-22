@@ -52,7 +52,7 @@ def getScores():
         scores = sorted(jsont, key=lambda x: x["score"], reverse=True)
         out = ""
         for S in scores:
-            out +=  S["name"]  + str(S["score"]) + "<br>"
+            out +=  S["name"] + ":" + str(S["score"]) + "<br>"
     return out
         
 def record(name, score):
@@ -151,7 +151,7 @@ def spawnAsteroids(qty):
             x = randint(0,width)
             y = randint(0,height)
             if not abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
-                asteroids.append(Asteroid(30, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+                asteroids.append(Asteroid(40, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
                 break
         
 
@@ -264,7 +264,7 @@ while True:
                             bullets.pop(bullets.index(B))
                             explode.play()
                             score += 50
-                            if A.getRadius() > 10:
+                            if A.getRadius() > 20:
                                 asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
                                 asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
                 
