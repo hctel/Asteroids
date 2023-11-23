@@ -7,41 +7,60 @@ minimumAsteroids = 3
 bulletCost = 1
 asteroidsReward = 50
 
+
 import pygame
+import requests
+import os
 import pygame_gui
 import sys
 import json
 from random import randint
+baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl/"
+def checkFile(path):
+    if not os.path.isfile(path):
+        response = requests.get(baseResourcesURL + path) 
+        open(path, 'wb').write(response.content)
+        
+def checkDir(path):
+    if not os.path.isdir(path):
+        os.mkdir(path)
+checkFile("Player.py")
+checkFile("Asteroid.py")
+checkFile("Bullet.py")
 from Player import *
 from Asteroid import *
 from pygame import mixer
 from pygame_gui.elements import UILabel, UIButton, UITextEntryLine, UITextBox
-import requests
-import os
+
+
+
+
+
+
+checkDir("res")
+checkDir("conf")
+checkFile("res/font.ttf")
+checkFile("res/bangMedium.wav")
+checkFile("res/fire2.wav")
+checkFile("res/icon.png")
+checkFile("res/levelup.mp3")
+checkFile("res/thrust.wav")
+checkFile("conf/theme.json")
 
 pygame.init()
 mixer.init()
 explode = mixer.Sound("res/bangMedium.wav")
 lvlup = mixer.Sound("res/levelup.mp3")
 
-baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl"
+
 
 screen = pygame.display.set_mode((width, height))
 surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
 pygame.display.set_icon(pygame.image.load("res/icon.png"))
 clock = pygame.time.Clock()
-if os.path.isfile("conf/theme.json"):
-    manager = pygame_gui.UIManager((width, height), "conf/theme.json")
-else:
-    try:
-        print("Didn't find conf/theme.json file. Downloading...")
-        response = requests.get(baseResourcesURL + "/conf/theme.json") 
-        open("conf/theme.json", 'wb').write(response.content)
-        manager = pygame_gui.UIManager((width, height), "conf/theme.json")
-    except:
-        print("")
-        manager = pygame_gui.UIManager((width, height))
+manager = pygame_gui.UIManager((width, height), "conf/theme.json")
+
 
 def getString(filepath):
     try:
