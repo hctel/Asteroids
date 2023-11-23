@@ -16,18 +16,32 @@ from Player import *
 from Asteroid import *
 from pygame import mixer
 from pygame_gui.elements import UILabel, UIButton, UITextEntryLine, UITextBox
+import requests
+import os
 
 pygame.init()
 mixer.init()
 explode = mixer.Sound("res/bangMedium.wav")
 lvlup = mixer.Sound("res/levelup.mp3")
 
+baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl"
+
 screen = pygame.display.set_mode((width, height))
 surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
 pygame.display.set_icon(pygame.image.load("res/icon.png"))
 clock = pygame.time.Clock()
-manager = pygame_gui.UIManager((width, height), "conf/theme.json")
+if os.path.isfile("conf/theme.json"):
+    manager = pygame_gui.UIManager((width, height), "conf/theme.json")
+else:
+    try:
+        print("Didn't find conf/theme.json file. Downloading...")
+        response = requests.get(baseResourcesURL + "/conf/theme.json") 
+        open("conf/theme.json", 'wb').write(response.content)
+        manager = pygame_gui.UIManager((width, height), "conf/theme.json")
+    except:
+        print("")
+        manager = pygame_gui.UIManager((width, height))
 
 def getString(filepath):
     try:
