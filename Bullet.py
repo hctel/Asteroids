@@ -10,12 +10,13 @@ class Bullet:
         self.__age = 0 
         self.__size = 2
         self.__surface = surface
+        self.__notFrozen = 1
     
     def draw(self, screen):
         if self.__age < self.__lifetime:
             self.__screen = screen 
             pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size)
-            self.__pos = (self.__pos[0] + self.__speed * cos(self.__angle) , self.__pos[1] + self.__speed * sin(self.__angle))
+            self.__pos = (self.__pos[0] + self.__notFrozen*self.__speed * cos(self.__angle) , self.__pos[1] + self.__notFrozen*self.__speed * sin(self.__angle))
         if self.__pos[0] > self.__surface.get_width():
             self.__pos = (0, self.__pos[1])
         if self.__pos[0] < 0:
@@ -37,3 +38,7 @@ class Bullet:
             return self.__pos[1]
         else:
             return -100
+    def freeze(self):
+        self.__notFrozen = 0
+    def unFreeze(self):
+        self.__notFrozen = 1

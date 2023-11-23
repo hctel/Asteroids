@@ -1,8 +1,11 @@
-width = 1920
-height = 1080
+width = 800
+height = 600
 shootingDelta = 10
 allowBrake = True
 minimumAsteroids = 3
+
+bulletCost = 1
+asteroidsReward = 50
 
 import pygame
 import pygame_gui
@@ -22,6 +25,7 @@ lvlup = mixer.Sound("res/levelup.mp3")
 screen = pygame.display.set_mode((width, height))
 surface = pygame.display.get_surface()
 pygame.display.set_caption("Asteroids")
+pygame.display.set_icon(pygame.image.load("res/icon.png"))
 clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((width, height), "conf/theme.json")
 
@@ -99,6 +103,12 @@ startButton = UIButton(
         text='Start',
         manager = manager
     )
+pauseLabel = UILabel(
+        relative_rect=pygame.Rect((width/2)-50, (height/2)-25, 100,50),
+        text="Paused",
+        manager = manager
+    )
+pauseLabel.hide()
 
 gameOverLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-50, 0, 100, 50),
@@ -147,12 +157,13 @@ player = Player((width/2,height/2), surface)
 
 def spawnAsteroids(qty):
     for n in range(qty):
-        while True:
+        x = randint(0,width)
+        y = randint(0,height)
+        while abs(x-player.getPosX()) < 70 or abs(y-player.getPosY()) < 70:
             x = randint(0,width)
             y = randint(0,height)
-            if not abs(x-player.getPosX()) < 50 or abs(y-player.getPosY()) < 50:
-                asteroids.append(Asteroid(40, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
-                break
+        asteroids.append(Asteroid(40, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+
         
 
 def start():
@@ -201,27 +212,38 @@ while True:
                 if not toAddName == "":
                     record(toAddName, score)
                     displayMenu()
+                else:
+                    displayMenu()
   
         elif event.type == pygame.KEYDOWN:
             if started and not paused:
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_q:
                     player.rotateCW()
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                     player.rotateCCW()
-                elif event.key == pygame.K_UP and allowBrake:
+                elif event.key == pygame.K_UP  or event.key == pygame.K_z:
                     player.accelFW()
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     player.accelBW()
-                elif event.key == pygame.K_SPACE and currentFrame - lastShot > shootingDelta:
+                elif event.key == pygame.K_SPACE and currentFrame - lastShot > shootingDelta and not paused:
                     bullets.append(player.shoot())
                     lastShot = currentFrame
-                    score -= 1
+                    score -= bulletCost
             if event.key == pygame.K_ESCAPE:
-                print("pause")
+                paused = not paused
+            if event.key == pygame.K_RETURN and saveBtn._get_visible():
+                toAddName = playerName.get_text()
+                playerName.set_text("")
+                
+                if not toAddName == "":
+                    record(toAddName, score)
+                    displayMenu()
+                else:
+                    displayMenu()
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_q or event.key == pygame.K_d:
                 player.stopRotate()
-            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN or event.key == pygame.K_z or event.key == pygame.K_s:
                 player.stopAccel()
 
       
@@ -243,11 +265,21 @@ while True:
 
     manager.draw_ui(screen)
     
-    if started and not paused:
+    if started:
         player.draw(screen)
         speedLabel.set_text(str(player.getSpeed()))
+        if paused:
+            player.freeze()
+            pauseLabel.show()
+        else:
+            player.unFreeze()
+            pauseLabel.hide()
         for A in asteroids:
             A.draw(screen)
+            if paused:
+                A.freeze()
+            else:
+                A.unFreeze()
             if player.getPosX() - A.getPosX() < A.getRadius() and player.getPosX() - A.getPosX() > -A.getRadius():
                 if player.getPosY() - A.getPosY() < A.getRadius() and player.getPosY() - A.getPosY() > -A.getRadius():
                     started = False
@@ -263,7 +295,7 @@ while True:
                             asteroids.pop(asteroids.index(A))
                             bullets.pop(bullets.index(B))
                             explode.play()
-                            score += 50
+                            score += asteroidsReward
                             if A.getRadius() > 20:
                                 asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
                                 asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
@@ -272,7 +304,10 @@ while True:
         for B in bullets:
             if not B.draw(screen):
                 bullets.pop(bullets.index(B))
+            if paused:
+                B.freeze()
+            else:
+                B.unFreeze()
         
-    
     pygame.display.flip()
     currentFrame += 1

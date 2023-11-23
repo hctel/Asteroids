@@ -7,11 +7,12 @@ class Asteroid:
         self.__speed = speed
         self.__size = size
         self.__surface = surface
+        self.__notFrozen = 1
         
     def draw(self, screen):
         self.__screen = screen 
         pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size, 1)
-        self.__pos = (self.__pos[0] + self.__speed[0]*0.06 , self.__pos[1] + self.__speed[1]*0.06)
+        self.__pos = (self.__pos[0] + self.__notFrozen*self.__speed[0]*0.06 , self.__pos[1] + self.__notFrozen*self.__speed[1]*0.06)
         if self.__pos[0] > self.__surface.get_width():
             self.__pos = (0, self.__pos[1])
         if self.__pos[0] < 0:
@@ -27,3 +28,7 @@ class Asteroid:
         return self.__pos[1]
     def getRadius(self):
         return self.__size
+    def freeze(self):
+        self.__notFrozen = 0
+    def unFreeze(self):
+        self.__notFrozen = 1
