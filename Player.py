@@ -6,7 +6,7 @@ from Bullet import *
 class Player:
     def __init__(self, pos, surface):
         self.__pos = pos
-        self.__speed = (1,1)
+        self.__speed = (0,0)
         self.__vmax = 750
         self.__rot = 0
         self.__rotate = 0 
