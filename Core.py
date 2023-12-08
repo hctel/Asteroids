@@ -3,6 +3,8 @@ height = 600
 shootingDelta = 10
 allowBrake = True
 minimumAsteroids = 3
+lowlag = True
+sides = 37
 
 bulletCost = 1
 asteroidsReward = 50
@@ -24,6 +26,7 @@ baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl/"
 #def checkDir(path):
 #   if not os.path.isdir(path):
 #      os.mkdir(path)
+
 from Player import *
 from Asteroid import *
 from pygame import mixer
@@ -32,6 +35,8 @@ from pygame_gui.elements import UILabel, UIButton, UITextEntryLine, UITextBox
 
 pygame.init()
 mixer.init()
+
+
 explode = mixer.Sound("res/bangMedium.wav")
 lvlup = mixer.Sound("res/levelup.mp3")
 
@@ -179,6 +184,9 @@ def spawnAsteroids(qty):
             x = randint(0,width)
             y = randint(0,height)
         asteroids.append(Asteroid(40, (x,y), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+    if not lowlag:
+        for A in asteroids:
+            A.setPolygon(sides)
 
         
 
@@ -313,9 +321,12 @@ while True:
                             explode.play()
                             score += asteroidsReward
                             if A.getRadius() > 20:
-                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
-                                asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
-                
+                                if lowlag:
+                                    asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+                                    asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface))
+                                else:
+                                    asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface).setPolygon(sides))
+                                    asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()-10, A.getPosY()-10), (0.4*randint(-40,40), 0.4*randint(-40,40)), surface).setPolygon(sides))
     
         for B in bullets:
             if not B.draw(screen):
