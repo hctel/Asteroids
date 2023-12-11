@@ -4,7 +4,7 @@ shootingDelta = 10
 allowBrake = True
 minimumAsteroids = 3
 lowlag = True
-sides = 37
+sides = 10
 
 bulletCost = 1
 asteroidsReward = 50
@@ -124,6 +124,11 @@ startButton = UIButton(
         text='Start',
         manager = manager
     )
+howToPlay = UIButton(
+        relative_rect=pygame.Rect((width/2)-50, (height/2)-25+(height/10)+50, 100,50),
+        text='How to play',
+        manager = manager
+    )
 pauseLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-50, (height/2)-25, 100,50),
         text="Paused",
@@ -210,6 +215,7 @@ def start():
     startButton.hide()
     titleLabel.hide()
     player = Player((width/2,height/2), surface)
+    howToPlay.hide()
     started = True
     
 def displayMenu():
@@ -316,8 +322,11 @@ while True:
             for B in bullets:
                     if B.getPosX() - A.getPosX() < A.getRadius()+5 and B.getPosX() - A.getPosX() > -A.getRadius()-5:
                         if B.getPosY() - A.getPosY() < A.getRadius() and B.getPosY() - A.getPosY() > -A.getRadius():
-                            asteroids.pop(asteroids.index(A))
-                            bullets.pop(bullets.index(B))
+                            try:
+                                J = asteroids.index(A)
+                                asteroids.pop(J)
+                            finally:
+                                bullets.pop(bullets.index(B))
                             explode.play()
                             score += asteroidsReward
                             if A.getRadius() > 20:
