@@ -78,5 +78,51 @@
 				"resource":"font.ttf"
 			}
 		}
+	},
+	"#main_title":
+	{
+		"font":
+		{
+			"name":"8bit",
+			"size": "60",
+			"bold": "0",
+			"italic":"0",
+			"regular_resource": {
+				"package":"res",
+				"resource":"font.ttf"
+			}
+		}
+	},
+	"#howtoplay_button":
+	{
+		"font":
+		{
+			"name":"8bit",
+			"size": "17",
+			"bold": "0",
+			"italic":"0",
+			"regular_resource": {
+				"package":"res",
+				"resource":"font.ttf"
+			}
+		}
+	},
+	"#pause_label":
+	{
+		"colours":
+		{
+			"normal_text":"#00ffff"
+		},
+		"font":
+		{
+			"name":"8bit",
+			"size": "50",
+			"bold": "0",
+			"italic":"0",
+			"regular_resource": {
+				"package":"res",
+				"resource":"font.ttf"
+			}
+		}
 	}
 }

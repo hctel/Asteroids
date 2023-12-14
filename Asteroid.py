@@ -11,12 +11,17 @@ class Asteroid:
         self.__surface = surface
         self.__notFrozen = 1
         self.__circle = True
+        self.__star = False
     
     def setPolygon(self, sides):
         self.__circle = False
         self.__sides = sides
         self.__radiuses = [randint(self.__size/2,self.__size) for n in range(sides)]
         self.__angles = [n/(2*pi) for n in range(sides)]
+        return self
+    
+    def setStar(self):
+        self.__star = True
         return self
             
     def __getPos(self):  
@@ -26,7 +31,8 @@ class Asteroid:
                 (self.__radiuses[n]*sin(self.__angles[n])+self.__pos[1])))
         return a
     def draw(self, screen):
-        self.__screen = screen 
+        if self.__star:
+            pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size)
         if self.__circle:
             pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size, 1)
         else:
