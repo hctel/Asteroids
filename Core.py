@@ -1,13 +1,15 @@
 width = 1920
 height = 1080
-shootingDelta = 0
+shootingDelta = 10
 asteroidSpeedRatio = 2
-asteroid_split = 120
+asteroid_split = 2
 allowBrake = True
 minimumAsteroids = 3
+bulletLifetime = 100
 lowlag = True
-invincible = True
 sides = 37
+
+invincible = False
 
 bulletCost = 1
 asteroidsReward = 50
@@ -270,7 +272,7 @@ while True:
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     player.accelBW()
                 elif event.key == pygame.K_SPACE and currentFrame - lastShot > shootingDelta and not paused:
-                    bullets.append(player.shoot())
+                    bullets.append(player.shoot(bulletLifetime))
                     lastShot = currentFrame
                     score -= bulletCost
             if event.key == pygame.K_ESCAPE:
@@ -304,7 +306,6 @@ while True:
             lvlup.play()
     
     manager.update(time_delta/1000)
-
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(0, 0, width, height))
 
     manager.draw_ui(screen)

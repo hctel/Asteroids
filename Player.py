@@ -69,9 +69,9 @@ class Player:
         self.__accel = 0
         mixer.music.stop()
         
-    def shoot(self):
+    def shoot(self, lifetime):
         self.__pew.play()
-        return Bullet(self.__pos, self.__rot, 0.005*self.totalSpeed+10, 100, self.__surface)
+        return Bullet(self.__pos, self.__rot, 0.005*self.totalSpeed+10, lifetime, self.__surface)
     
     def getPosX(self):
         return self.__pos[0]
