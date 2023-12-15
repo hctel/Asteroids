@@ -17,6 +17,7 @@ class Bullet:
             self.__screen = screen 
             pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size)
             self.__pos = (self.__pos[0] + self.__notFrozen*self.__speed * cos(self.__angle) , self.__pos[1] + self.__notFrozen*self.__speed * sin(self.__angle))
+            
         if self.__pos[0] > self.__surface.get_width():
             self.__pos = (0, self.__pos[1])
         if self.__pos[0] < 0:

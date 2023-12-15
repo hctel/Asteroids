@@ -1,37 +1,34 @@
 width = 1920
 height = 1080
+
 shootingDelta = 10
-asteroidSpeedRatio = 2
-asteroid_split = 2
-allowBrake = True
-minimumAsteroids = 3
 bulletLifetime = 100
+allowBrake = True
+invincible = False
+
+asteroidSpeedRatio = 1
+asteroid_split = 2
+minimumAsteroids = 3 
+asteroidInitialSize = 40
+lastSize = 20
+sizeReduction = 10
 lowlag = True
 sides = 37
 
-invincible = False
-
 bulletCost = 1
 asteroidsReward = 50
+bulletEasyFactor = 5 #Augmentation de la zone de détection de collision des bullets pour rendre le jeu plus facile
 
+minStarQty = 22
+maxStarQty = 55
+minStarRadius = 1
+maxStarRadius = 3
 
 import pygame
-import requests
-import os
 import pygame_gui
 import sys
 import json
 from random import randint
-baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl/"
-#def checkFile(path):
-#   if not os.path.isfile(path):
-#      response = requests.get(baseResourcesURL + path) 
-#     open(path, 'wb').write(response.content)
-        
-#def checkDir(path):
-#   if not os.path.isdir(path):
-#      os.mkdir(path)
-
 from Player import *
 from Asteroid import *
 from pygame import mixer
@@ -56,28 +53,28 @@ clock = pygame.time.Clock()
 manager = pygame_gui.UIManager((width, height), "conf/theme.json")
 
 
-def getString(filepath):
+def getString(filepath): #Permet re recuperer le texte dans le fichier de scores
     try:
         with open(filepath) as file:
             return file.read()
     except FileNotFoundError:
-        print("Fichier non trouve!")
+        print("Didn't find the scores file yet. Creating it...")
         return 404
     except IOError:
-        print("Erreur d'entree-sortie")
+        print("I/O Error while reading the score file!")
         return 400
 
-def getJson(string):
+def getJson(string): #Convertit le String du fichier texte en objet JSON
     if string:
         return json.loads(string)
     
-def getScores():
+def getScores(): #Récupère tous les scores du JSON et renvoie l'ensemble des scores en String avec un <br> à la fin pour faire un retour à la ligne vu que les TextBoxes de pygameGUI prennent de l'HTML. (<br> fait un retour à la ligne)
     txt = getString("scores.json")
     if type(txt) == int:
         if txt == 404:
-            return("Pas encore de scores...")
+            return("No scores yet...")
         elif txt == 400:
-            return("Erreur de fichier!")
+            return("File error!")
     else:
         jsont = getJson(txt)
         scores = sorted(jsont, key=lambda x: x["score"], reverse=True)
@@ -86,28 +83,31 @@ def getScores():
             out +=  S["name"] + " : " + str(S["score"]) + "<br>"
     return out
         
-def record(name, score):
+def record(name, score): #Enregistre le score du joueur dans le JSON et enregistre le fichier
     try:
-        with open("scores.json", 'r') as fichier_scores:
-            scores = json.load(fichier_scores)
+        with open("scores.json", 'r') as file:
+            scores = json.load(file)
     except FileNotFoundError:
         scores = []
 
     scores.append({"name": name, "score": score})
 
 
-    with open('scores.json', 'w') as fichier_scores:
-        json.dump(scores, fichier_scores, indent=2)
+    with open('scores.json', 'w') as file:
+        json.dump(scores, file, indent=2)
 
 stars = []
+
 def spawnStars():
-    qty = randint(22,56)
+    qty = randint(minStarQty,maxStarQty)
     for i in range(qty):
         pos = (randint(0,width), randint(0,height))
-        size = randint(1,3)
+        size = randint(minStarRadius,maxStarRadius)
         speed = (0,0)
         stars.append(Asteroid(size,pos,speed,surface).setStar())
 
+
+#Toutes les definitions des UIElements
 scoreLabel = UILabel(
         relative_rect=pygame.Rect(0, 0, 100, 50),
         text='',
@@ -120,12 +120,18 @@ levelLabel = UILabel(
         manager = manager
     )
 
-speedLabel = UILabel(
+speedLabel = UILabel( #Label de debug, on peut mettre un peu la variable qu'on veut pour la vérifier en jeu
         relative_rect = pygame.Rect(700, 0, 100, 50),
         text = '',
         manager = manager
     )
-speedLabel.hide()
+speedLabel.hide() #On met cette ligne en commentaire pour l'activer
+
+buttonQuit = UIButton(
+        relative_rect=pygame.Rect(width-100, 0, 100, 50),
+        text='Quit',
+        manager = manager
+    )
 
 titleLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-125, (height/2)-25-(height/10), 252, 50),
@@ -145,6 +151,90 @@ howToPlay = UIButton(
         manager = manager,
         object_id = ObjectID(class_id = "@buttons", object_id = "#howtoplay_button")
     )
+
+goToMenu = UIButton(
+        relative_rect=pygame.Rect(0,0,100,50),
+        text='Menu',
+        manager = manager
+    )
+goToMenu.hide()
+
+
+#Tous les UIElements pour le menu "HowToPlay"
+#J'aurais pu faire bcp plus simple en itérant une liste de touches par exemple
+zKey = UIButton(
+        relative_rect=pygame.Rect((width/3)-25, (height/2)-100, 100,50),
+        text='Z',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_z")
+    )
+zKey.hide()
+qKey = UIButton(
+        relative_rect=pygame.Rect((width/3)-25, (height/2)-50, 100,50),
+        text='Q',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_q")
+    )
+qKey.hide()
+sKey = UIButton(
+        relative_rect=pygame.Rect((width/3)-25, (height/2), 100,50),
+        text='S',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_s")
+    )
+sKey.hide()
+dKey = UIButton(
+        relative_rect=pygame.Rect((width/3)-25, (height/2)+50, 100,50),
+        text='D',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_d")
+    )
+dKey.hide()
+spKey = UIButton(
+        relative_rect=pygame.Rect((width/3)-25, (height/2)+100, 100,50),
+        text='SPACE',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_sp")
+    )
+spKey.hide()
+zTxt = UILabel(
+        relative_rect=pygame.Rect((2*width/3), (height/2)-100, 100,50),
+        text='Forward',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_z")
+    )
+zTxt.hide()
+qTxt = UILabel(
+        relative_rect=pygame.Rect((2*width/3), (height/2)-50, 100,50),
+        text='Backwards',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_q")
+    )
+qTxt.hide()
+sTxt = UILabel(
+        relative_rect=pygame.Rect((2*width/3), (height/2), 210,50),
+        text='Rotate counter-clockwise',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_s")
+    )
+sTxt.hide()
+dTxt = UILabel(
+        relative_rect=pygame.Rect((2*width/3), (height/2)+50, 138,50),
+        text='Rotate clockwise',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_d")
+    )
+dTxt.hide()
+spTxt = UILabel(
+        relative_rect=pygame.Rect((2*width/3), (height/2)+100, 100,50),
+        text='Shoot',
+        manager = manager,
+        object_id = ObjectID(class_id = "@howtoplay_buttons", object_id = "#howtoplay_sp")
+    )
+spTxt.hide()
+
+
+
 pauseLabel = UILabel(
         relative_rect=pygame.Rect((width/2)-90, (height/2)-34, 180,68),
         text="Paused",
@@ -205,13 +295,13 @@ def spawnAsteroids(qty):
         while abs(x-player.getPosX()) < 70 or abs(y-player.getPosY()) < 70:
             x = randint(0,width)
             y = randint(0,height)
-        asteroids.append(Asteroid(40, (x,y), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface))
+        asteroids.append(Asteroid(asteroidInitialSize, (x,y), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface))
     if not lowlag:
         for A in asteroids:
             A.setPolygon(sides)
        
 
-def start():
+def start(): #Cache tout et initialise le joueur
     global level
     global score
     global asteroids
@@ -235,14 +325,49 @@ def start():
     started = True
     
 def displayMenu():
+    scoreLabel.hide()
+    levelLabel.hide()
     leaderboard.hide()
     gameOverLabel.hide()
     saveBtn.hide()
     playerName.hide()
     startButton.show()
     titleLabel.show()
+    howToPlay.show()
+    
+def displayHowToPlay():
+    startButton.hide()
+    titleLabel.hide()
+    howToPlay.hide()
+    goToMenu.show()
+    zKey.show()
+    zTxt.show()
+    qKey.show()
+    qTxt.show()
+    sKey.show()
+    sTxt.show()
+    dKey.show()
+    dTxt.show()
+    spKey.show()
+    spTxt.show()
 
-while True:
+def hideHowToPlay():
+    zKey.hide()
+    zTxt.hide()
+    qKey.hide()
+    qTxt.hide()
+    sKey.hide()
+    sTxt.hide()
+    dKey.hide()
+    dTxt.hide()
+    spKey.hide()
+    spTxt.hide()
+    goToMenu.hide()
+    startButton.show()
+    titleLabel.show()
+    howToPlay.show()
+
+while True: #Boucle qui fait tout (le while true est interrompu avec le sys.exit())
     
     time_delta = clock.tick(60)
     for event in pygame.event.get():
@@ -251,6 +376,12 @@ while True:
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == startButton:
                 start()
+            elif event.ui_element == howToPlay:
+                displayHowToPlay()
+            elif event.ui_element == goToMenu:
+                hideHowToPlay()
+            elif event.ui_element == buttonQuit:
+                sys.exit()
             elif event.ui_element == saveBtn:
                 toAddName = playerName.get_text()
                 playerName.set_text("")
@@ -287,16 +418,39 @@ while True:
                     displayMenu()
             if event.key == pygame.K_F9:
                 sys.exit()
+            if qKey.visible:
+                if event.key == pygame.K_q:
+                    qKey._set_active()
+                elif event.key == pygame.K_d:
+                    dKey._set_active()
+                elif event.key == pygame.K_s:
+                    sKey._set_active()
+                elif event.key == pygame.K_z:
+                    zKey._set_active()
+                elif event.key == pygame.K_SPACE:
+                    spKey._set_active()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_q or event.key == pygame.K_d:
                 player.stopRotate()
-            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN or event.key == pygame.K_z or event.key == pygame.K_s:
+            if event.key == pygame.K_UP or event.key == pygame.K_DOWN or event.key == pygame.K_z or event.key == pygame.K_s:
                 player.stopAccel()
+            if qKey.visible:
+                if event.key == pygame.K_q:
+                    qKey._set_inactive()
+                elif event.key == pygame.K_d:
+                    dKey._set_inactive()
+                elif event.key == pygame.K_s:
+                    sKey._set_inactive()
+                elif event.key == pygame.K_z:
+                    zKey._set_inactive()
+                elif event.key == pygame.K_SPACE:
+                    spKey._set_inactive()
 
       
         manager.process_events(event)
     if score < 0:
-        score = 0        
+        score = 0  
+              
     if started:
         scoreLabel.set_text("Score:" + str(score))
         levelLabel.set_text("Niveau " + str(level))
@@ -311,6 +465,7 @@ while True:
     manager.draw_ui(screen)
     for S in stars:
         S.draw(screen)
+        
     if started:
         player.draw(screen)
         speedLabel.set_text(str(player.getSpeed()))
@@ -320,6 +475,8 @@ while True:
         else:
             player.unFreeze()
             pauseLabel.hide()
+            
+        toPop = []
         for A in asteroids:
             A.draw(screen)
             if paused:
@@ -336,25 +493,22 @@ while True:
                     saveBtn.show()
             
             for B in bullets:
-                    if B.getPosX() - A.getPosX() < A.getRadius()+5 and B.getPosX() - A.getPosX() > -A.getRadius()-5:
-                        if B.getPosY() - A.getPosY() < A.getRadius() and B.getPosY() - A.getPosY() > -A.getRadius():
-                            try:
-                                J = asteroids.index(A)
-                                asteroids.pop(J)
-                            except ValueError:
-                                print("pop")     
-                            finally:
-                                bullets.pop(bullets.index(B))
+                    if B.getPosX() - A.getPosX() < A.getRadius()+bulletEasyFactor and B.getPosX() - A.getPosX() > -A.getRadius()-bulletEasyFactor:
+                        if B.getPosY() - A.getPosY() < A.getRadius()+bulletEasyFactor and B.getPosY() - A.getPosY() > -A.getRadius()-bulletEasyFactor:
+                            toPop.append(A)
+                            bullets.pop(bullets.index(B))
                             explode.play()
                             score += asteroidsReward
-                            if A.getRadius() > 20:
+                            if A.getRadius() > lastSize:
                                 if lowlag:
                                     for i in range(asteroid_split):
-                                        asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface))
+                                        asteroids.append(Asteroid(A.getRadius()-sizeReduction, (A.getPosX()+10, A.getPosY()+10), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface))
                                 else:
                                     for i in range(asteroid_split):
-                                        asteroids.append(Asteroid(A.getRadius()-10, (A.getPosX()+10, A.getPosY()+10), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface).setPolygon(sides))
-                                    
+                                        asteroids.append(Asteroid(A.getRadius()-sizeReduction, (A.getPosX()+10, A.getPosY()+10), (asteroidSpeedRatio*randint(-40,40), asteroidSpeedRatio*randint(-40,40)), surface).setPolygon(sides))
+        for Aa in toPop:
+            asteroids.pop(asteroids.index(Aa))
+                                   
         for B in bullets:
             if not B.draw(screen):
                 bullets.pop(bullets.index(B))

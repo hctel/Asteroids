@@ -30,6 +30,7 @@ class Asteroid:
             a.append(((self.__radiuses[n]*cos(self.__angles[n])+self.__pos[0]), 
                 (self.__radiuses[n]*sin(self.__angles[n])+self.__pos[1])))
         return a
+    
     def draw(self, screen):
         if self.__star:
             pygame.draw.circle(screen, (255,255,255), self.__pos, self.__size)
@@ -38,6 +39,7 @@ class Asteroid:
         else:
             pygame.draw.polygon(screen, (255,255,255),  self.__getPos(), 1)
         self.__pos = (self.__pos[0] + self.__notFrozen*self.__speed[0]*0.06 , self.__pos[1] + self.__notFrozen*self.__speed[1]*0.06)
+        
         if self.__pos[0] > self.__surface.get_width():
             self.__pos = (0, self.__pos[1])
         if self.__pos[0] < 0:
