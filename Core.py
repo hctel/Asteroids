@@ -1,3 +1,5 @@
+currentGameVersion = b"1.1\n"
+
 width = 1920
 height = 1080
 
@@ -28,12 +30,39 @@ import pygame
 import pygame_gui
 import sys
 import json
+import requests
+import os
 from random import randint
 from Player import *
 from Asteroid import *
 from pygame import mixer
 from pygame_gui.elements import UILabel, UIButton, UITextEntryLine, UITextBox
 from pygame_gui.core import ObjectID
+baseResourcesURL = "https://hctel.net/dev/share/perso/IN2L/dl/"
+def checkVer():
+    return str(requests.get(baseResourcesURL+"/version").content)
+def checkFile(path):
+    if not os.path.isfile(path) or not latestGameVersion == currentGameVersion:
+        response = requests.get(baseResourcesURL + path) 
+        open(path, 'wb').write(response.content)
+
+def checkDir(path):
+    if not os.path.isdir(path):
+        os.mkdir(path)
+print(checkVer())
+latestGameVersion = checkVer()
+checkFile("Player.py")
+checkFile("Asteroid.py")
+checkFile("Bullet.py")
+checkDir("res")
+checkDir("conf")
+checkFile("res/font.ttf")
+checkFile("res/bangMedium.wav")
+checkFile("res/fire2.wav")
+checkFile("res/icon.png")
+checkFile("res/levelup.mp3")
+checkFile("res/thrust.wav")
+checkFile("conf/theme.json")
 
 
 pygame.init()
